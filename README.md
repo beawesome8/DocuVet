@@ -9,7 +9,7 @@ low-confidence results to human review.
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Document intake, hashing, normalization, preprocessing | Done |
-| 2 | OCR (Tesseract + EasyOCR), confidence scoring, vision fallback | Not started |
+| 2 | OCR (Tesseract + EasyOCR), confidence scoring, vision fallback | Done |
 | 3 | Structured field extraction (Pydantic + instructor) | Not started |
 | 4 | Business rule validation, confidence-based routing | Not started |
 | 5 | Human review UI (Streamlit), correction logging | Not started |
@@ -54,3 +54,28 @@ python src/preprocess.py <filepath>    # runs intake on a document, prints JSON 
 ## Author
 
 Aman Benjamin Emmanuel — github.com/beawesome8
+
+## Phase 2: OCR and confidence-based routing
+
+Runs Tesseract and EasyOCR independently on each page. Neither engine's
+confidence score is trusted alone — a single OCR engine can report high
+confidence while producing wrong text. Instead, the two engines' outputs
+are compared for agreement (via sequence similarity); low agreement is
+treated as a stronger failure signal than either engine's self-reported
+confidence.
+
+Validated against Phase 1's clean/messy test pair:
+- Clean invoice: 99.8% inter-engine agreement, no fallback needed.
+- Messy invoice (rotated, blurred, noised): 44.6% agreement, correctly
+  flagged for vision-model fallback, despite Tesseract's own confidence
+  score (63%) technically clearing the single-engine threshold alone.
+
+Note: word counts differ between engines on identical text (Tesseract
+tokenizes per-word, EasyOCR groups multi-word regions). This is expected
+and not used as a quality signal — only text similarity is.
+
+## Usage (Phase 2)
+
+\`\`\`bash
+python src/ocr.py <path_to_processed_page_image>
+\`\`\`
