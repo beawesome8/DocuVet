@@ -11,7 +11,7 @@ low-confidence results to human review.
 | 1 | Document intake, hashing, normalization, preprocessing | Done |
 | 2 | OCR (Tesseract + EasyOCR), confidence scoring, vision fallback | Done |
 | 3 | Structured field extraction (Pydantic + instructor) | Not started |
-| 4 | Business rule validation, confidence-based routing | Not started |
+| 4 | Business rule validation, confidence-based routing | Done |
 | 5 | Human review UI (Streamlit), correction logging | Not started |
 | 6 | Portfolio polish, demo, metrics | Not started |
 
@@ -109,4 +109,31 @@ yet reconciled.
 
 \`\`\`bash
 python src/extract.py <path_to_processed_page_image>
+\`\`\`
+
+## Phase 4: Business rule validation and routing
+
+Three layers: type validation (dates parse), business rules (line items
+sum to subtotal, subtotal + tax = total), and routing (auto-approve vs.
+human review).
+
+No per-field numeric confidence score exists from the extraction model,
+so routing does not fabricate one. It uses two real signals instead:
+whether the page needed OCR vision fallback (Phase 2), and whether the
+model's own `extraction_notes` is non-empty (self-reported uncertainty).
+
+Known limitation: `extraction_notes` is treated as binary (present/absent),
+not classified by severity. A benign note about an optional missing field
+triggers the same "needs_review" outcome as a note about an unreadable
+required field, even when all business-rule math checks pass. This is not
+fixed yet — it needs real data across many documents to classify note
+severity correctly, not a guess from a single test case. Phase 5's
+analytics will track false-positive review rate to quantify this rather
+than assume it's fine.
+
+## Usage (Phase 4)
+
+\`\`\`bash
+python src/extract.py <image_path> > /tmp/extraction.json
+python src/validate.py /tmp/extraction.json
 \`\`\`
