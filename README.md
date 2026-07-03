@@ -4,15 +4,15 @@ Accepts scanned forms, PDFs, and images; extracts structured fields via OCR
 and vision-model fallback; validates against business rules; routes
 low-confidence results to human review.
 
-## Status: Phase 1 of 6 complete
+## Status: Phase 5 of 6 complete
 
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Document intake, hashing, normalization, preprocessing | Done |
 | 2 | OCR (Tesseract + EasyOCR), confidence scoring, vision fallback | Done |
-| 3 | Structured field extraction (Pydantic + instructor) | Not started |
+| 3 | Structured field extraction (Pydantic + instructor) | Done |
 | 4 | Business rule validation, confidence-based routing | Done |
-| 5 | Human review UI (Streamlit), correction logging | Not started |
+| 5 | FastAPI backend + React review UI | Done |
 | 6 | Portfolio polish, demo, metrics | Not started |
 
 ## Architecture
@@ -33,8 +33,14 @@ passes Phase 1 with zero warnings (see `data/uploads/test_invoice_messy.png`).
 
 ## Tech stack
 
-Python 3.12, PyMuPDF, Pillow, Pydantic, PostgreSQL, Celery + Redis,
-Tesseract + EasyOCR, Anthropic Claude (vision fallback), Streamlit.
+**Implemented:** Python 3.12, FastAPI, PyMuPDF, Pillow, Pydantic,
+Tesseract + EasyOCR, Anthropic Claude (vision fallback, via `instructor`),
+React (Vite), Axios.
+
+**Not yet built (named next steps, not shipped):** PostgreSQL — currently
+an in-memory Python dict, lost on server restart. Celery + Redis — currently
+synchronous request handling; a document upload blocks on OCR + LLM calls
+for 10-20 seconds rather than being queued as a background job.
 
 ## Setup
 
@@ -135,6 +141,48 @@ decision instead of a guessed one.
 ## Usage (Phase 4)
 
 \`\`\`bash
-python src/extract.py <image_path> > /tmp/extraction.json
-python src/validate.py /tmp/extraction.json
+python src/extract.py <image_path> > data/scratch/extraction.json
+python src/validate.py data/scratch/extraction.json
+\`\`\`
+
+## Phase 5: FastAPI backend and React review UI
+
+FastAPI wraps the existing pipeline (preprocess, ocr, extract, validate)
+as HTTP endpoints; no pipeline logic was rewritten, only exposed. React
+(Vite) provides a two-view UI: a queue list showing all processed documents
+with their routing decision, and a detail view showing each page's image
+alongside extracted fields and the reason for the routing decision.
+
+Validated end-to-end through the actual browser UI (not just curl/CLI):
+uploading the clean test fixture correctly produced `extraction_method:
+ocr_text` and `auto_approved`-eligible field values, while still routing
+to `needs_review` due to the extraction_notes false-positive pattern
+documented in Phase 4 - this is now reproduced live in the UI, not just
+measured in a script, on the same 2-document sample size.
+
+Off-scope test: uploading an unrelated document (a resume) into the
+invoice-only pipeline did not produce hallucinated invoice data - the
+model correctly reported "this document is not an invoice" in
+`extraction_notes` rather than inventing a vendor or totals. Informal
+robustness signal, not a formal test case.
+
+Known limitations, stated plainly:
+- No persistence: all state is an in-memory dict, lost on server restart.
+- No async queue: document processing is synchronous inside the HTTP
+  request, so uploads take 10-20 seconds rather than returning immediately.
+- No click-to-highlight source regions on the image (spec's stated
+  interaction) - extraction doesn't return bounding boxes, so this would
+  require a second, dedicated OCR pass just for coordinates. Full image
+  and full field list are shown side by side instead.
+
+## Usage (Phase 5)
+
+\`\`\`bash
+# terminal 1: backend
+python -m uvicorn src.api:app --reload --port 8000
+
+# terminal 2: frontend
+cd frontend
+npm run dev
+# open http://localhost:5173
 \`\`\`
