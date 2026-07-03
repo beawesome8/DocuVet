@@ -5,3 +5,7 @@ __pycache__/
 data/processed/
 .DS_Store
 data/scratch/
+data/uploads/*
+data/uploads/*
+!data/uploads/test_invoice_clean.pdf
+!data/uploads/test_invoice_messy.png
