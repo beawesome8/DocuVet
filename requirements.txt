@@ -1,0 +1,13 @@
+pymupdf==1.24.10
+pillow==10.4.0
+pydantic==2.9.2
+python-dotenv==1.0.1
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.35
+celery==5.4.0
+redis==5.1.0
+pytesseract==0.3.13
+easyocr==1.7.2
+instructor==1.5.2
+anthropic==0.34.2
+streamlit==1.38.0
