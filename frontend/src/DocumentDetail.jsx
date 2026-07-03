@@ -61,13 +61,13 @@ export default function DocumentDetail({ documentId, onBack }) {
               {page.decision}
             </div>
 
-            <div style={{ fontSize: 13, color: "#666", marginBottom: 16 }}>
+            <div style={{ fontSize: 15, color: "#666", marginBottom: 16 }}>
               {page.decision_reasons.map((reason, i) => (
                 <div key={i}>• {reason}</div>
               ))}
             </div>
 
-            <table style={{ width: "100%", fontSize: 14 }}>
+            <table style={{ width: "100%", fontSize: 16 }}>
               <tbody>
                 <tr><td style={{ color: "#666", padding: "4px 0" }}>Vendor</td><td>{page.extraction.vendor_name}</td></tr>
                 <tr><td style={{ color: "#666", padding: "4px 0" }}>Invoice #</td><td>{page.extraction.invoice_number}</td></tr>
@@ -81,8 +81,8 @@ export default function DocumentDetail({ documentId, onBack }) {
             </table>
 
             <div style={{ marginTop: 12 }}>
-              <strong style={{ fontSize: 13 }}>Line items</strong>
-              <ul style={{ fontSize: 13, paddingLeft: 18 }}>
+              <strong style={{ fontSize: 16 }}>Line items</strong>
+              <ul style={{ fontSize: 15, paddingLeft: 18 }}>
                 {page.extraction.line_items.map((item, i) => (
                   <li key={i}>
                     {item.description} — qty {item.quantity ?? "?"}, unit {item.unit_price ?? "N/A"}, total €{item.line_total?.toFixed(2)}
@@ -92,7 +92,7 @@ export default function DocumentDetail({ documentId, onBack }) {
             </div>
 
             {page.extraction.extraction_notes && (
-              <div style={{ marginTop: 12, fontSize: 13, background: "#fef3c7", padding: 8, borderRadius: 4 }}>
+              <div style={{ marginTop: 12, fontSize: 15, background: "#fef3c7", padding: 12, borderRadius: 4 }}>
                 <strong>Model notes:</strong> {page.extraction.extraction_notes}
               </div>
             )}
