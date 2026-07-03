@@ -77,9 +77,11 @@ def extract_from_text(ocr_text: str) -> InvoiceExtraction:
             "content": (
                 "Extract invoice fields from this OCR text. The text may contain "
                 "OCR errors (misread characters, merged words) - use surrounding "
-                "context to correct obvious errors, but do not invent values that "
-                "are not actually present. If a field is genuinely unreadable, "
-                "note it in extraction_notes rather than guessing.\n\n"
+                "context to correct obvious character-level errors only. Do not "
+                "compute or infer any numeric value that is not explicitly present "
+                "in the text (for example, do not divide a line total by quantity "
+                "to produce a unit price). If a field is not explicitly stated, "
+                "leave it null and note it in extraction_notes.\n\n"
                 f"OCR TEXT:\n{ocr_text}"
             ),
         }],
