@@ -104,7 +104,10 @@ def extract_from_image(image_path: str) -> InvoiceExtraction:
                     "Extract invoice fields directly from this document image. "
                     "OCR failed on this page (low confidence or inter-engine "
                     "disagreement), so read the image itself rather than relying "
-                    "on any OCR text. If a field is genuinely unreadable, note it "
+                    "on any OCR text. Do not compute or infer any numeric value "
+                    "that is not explicitly present in the image (for example, do "
+                    "not divide a line total by quantity to produce a unit price). "
+                    "If a field is not explicitly shown, leave it null and note it "
                     "in extraction_notes rather than guessing."
                 ),
             ],
