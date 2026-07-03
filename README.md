@@ -79,3 +79,34 @@ and not used as a quality signal — only text similarity is.
 \`\`\`bash
 python src/ocr.py <path_to_processed_page_image>
 \`\`\`
+
+## Phase 3: Structured extraction with confidence-based routing
+
+Routes each page based on Phase 2's diagnostic: OCR-clean pages are
+extracted from OCR text (cheap); pages flagged for vision fallback skip
+OCR text entirely and are extracted directly from the image via Claude's
+vision API.
+
+Validated result: on the messy test fixture, both OCR engines produced
+garbled text (e.g. "BUR 1810.00" instead of "EUR 1310.00"), while
+Tesseract's own confidence score (63%) would have passed a single-engine
+threshold check alone. Vision fallback, triggered by the Phase 2 agreement
+signal, recovered every field correctly. This is the core validation of
+the project's confidence-routing architecture, not just OCR duplication.
+
+Scope note: only an invoice schema is implemented. Document-type
+classification and multi-schema routing are a named next step (see spec),
+not built here — real classification needs a labeled dataset or dedicated
+classification prompt, out of scope for a single-fixture demo.
+
+Known inconsistency: the OCR-text extraction path will compute unit price
+via division when only line totals are present (flagged honestly in
+`extraction_notes`); the vision path leaves it null in the same scenario.
+Same model, different prompt phrasing produced different behavior — not
+yet reconciled.
+
+## Usage (Phase 3)
+
+\`\`\`bash
+python src/extract.py <path_to_processed_page_image>
+\`\`\`
