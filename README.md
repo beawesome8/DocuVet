@@ -123,13 +123,14 @@ whether the page needed OCR vision fallback (Phase 2), and whether the
 model's own `extraction_notes` is non-empty (self-reported uncertainty).
 
 Known limitation: `extraction_notes` is treated as binary (present/absent),
-not classified by severity. A benign note about an optional missing field
-triggers the same "needs_review" outcome as a note about an unreadable
-required field, even when all business-rule math checks pass. This is not
-fixed yet — it needs real data across many documents to classify note
-severity correctly, not a guess from a single test case. Phase 5's
-analytics will track false-positive review rate to quantify this rather
-than assume it's fine.
+not classified by severity. Measured on 2 test documents: the notes-based
+rule contributed 0 correct catches and 1 false positive (a clean invoice
+with a harmless note about an optional null field was routed to review
+solely because of that note). The OCR-fallback flag alone was sufficient
+in both test cases. This is not enough data to remove the rule - n=2 is
+an anecdote, not a statistic - so it stays active, but Phase 5's dashboard
+tracks false-positive review rate directly so this becomes a measured
+decision instead of a guessed one.
 
 ## Usage (Phase 4)
 
